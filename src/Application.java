@@ -6,7 +6,7 @@ import javax.swing.JFrame;
 public class Application extends JFrame {
 
 	/**
-	 * 
+	 * Hi
 	 */
 	private static final long serialVersionUID = 1L;
 
