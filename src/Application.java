@@ -17,8 +17,12 @@ public class Application extends JFrame {
 
 	private void initUI() {
 		
+		Board board = new Board();
+		
 		// Here we put the Board to the center of the JFrame container.
-		add(new Board()); 
+		add(board); 
+		
+		addKeyListener(board);
 
 		// This line sets the size of the window.
 		setSize(500, 500); 

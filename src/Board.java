@@ -23,7 +23,7 @@ public class Board extends JPanel implements KeyListener {
 	Image background;
 	Givens chris;
 	public Board() {
-
+		
 		background = getImage("/images/lcc.png");
 		chris = new Givens();
 		
@@ -34,6 +34,7 @@ public class Board extends JPanel implements KeyListener {
 			    repaint();
 			  }
 			}, 0, 1000/10);
+		//addKeyListener(this);
 	}
 	
 	public Image getImage(String path) {
@@ -44,18 +45,9 @@ public class Board extends JPanel implements KeyListener {
 	public void paint(Graphics g) {
 		super.paint(g);
 		
-		//change image state for givens
-		int imageNumber = chris.imageNumber % 6;
-		if (imageNumber > 3) imageNumber -= 2 * (imageNumber - 3);
-		System.out.println(imageNumber);
-		if (chris.imageNumber == 6)
-			chris.imageNumber = 0;
-		//reload the image
-		chris.refresh(imageNumber);
+		chris.animate();
+		g.drawImage(chris.image, chris.location.x, chris.location.y, null);
 		
-		g.drawImage(chris.image, 100, 100, null);
-		//finish up
-		chris.imageNumber += 1;
 	}
 	
 	public void paintComponent(Graphics g) {
@@ -63,16 +55,29 @@ public class Board extends JPanel implements KeyListener {
 		
 	}
 	
+	//@Override
 	public void keyPressed(KeyEvent key) {
 		int keyCode = key.getKeyCode();
-		chris.move(keyCode);
+		System.out.println(keyCode);
+		if (keyCode == KeyEvent.VK_RIGHT) {
+			chris.movement = 10;
+		} else if (keyCode == KeyEvent.VK_LEFT) {
+			chris.movement = -10;
+		} else if (keyCode == KeyEvent.VK_UP) {
+			chris.jumping = true;
+		}
 	}
 	
 	public void keyReleased(KeyEvent key) {
-		
+		int keyCode = key.getKeyCode();
+		System.out.println(keyCode);
+		if (keyCode == KeyEvent.VK_RIGHT || keyCode == KeyEvent.VK_LEFT) {
+			chris.movement = 0;
+		}
 	}
 	
 	public void keyTyped(KeyEvent key) {
 		
 	}
+	
 }
