@@ -1,7 +1,10 @@
 
-import java.awt.EventQueue;
 import javax.swing.JFrame;
-
+import java.net.URISyntaxException;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import java.io.File;
+import javax.sound.sampled.Clip;
 
 public class Application extends JFrame {
 
@@ -9,6 +12,7 @@ public class Application extends JFrame {
 	 * Hi
 	 */
 	private static final long serialVersionUID = 1L;
+	SimpleAudioPlayer sap;
 
 	public Application() {
 
@@ -18,6 +22,16 @@ public class Application extends JFrame {
 	private void initUI() {
 		
 		Board board = new Board();
+		
+		try {
+			AudioInputStream inputStream = AudioSystem.getAudioInputStream(new File(this.getClass().getResource("/audio/music.wav").toURI()));
+			Clip clip = AudioSystem.getClip();
+			clip.open(inputStream);
+        	clip.loop(Clip.LOOP_CONTINUOUSLY);
+		} catch (Exception e) {
+			System.out.println(":(");
+		}
+		//sap = new SimpleAudioPlayer(this.getClass().getResource("/audio/music.wav").toString().substring(5));
 		
 		// Here we put the Board to the center of the JFrame container.
 		add(board); 
@@ -43,6 +57,8 @@ public class Application extends JFrame {
 
 				Application ex = new Application();
 				ex.setVisible(true);
+				
+
 
 	}
 }

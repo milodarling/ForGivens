@@ -23,6 +23,8 @@ public class Board extends JPanel implements KeyListener {
 	Image background;
 	Givens chris;
 	boolean animatingForward;
+	int distance = 0;
+	int unreadEmails = 0;
 	
 	final Brick[] bricks = {
 		new Brick(500, 200, 5)	
@@ -52,10 +54,10 @@ public class Board extends JPanel implements KeyListener {
 		super.paint(g);
 		
 		chris.animate();
-		
+		distance += chris.movement;
 		for (Brick brick : bricks) {
 			if (this.animatingForward) {
-				brick.x -= 10;
+				brick.x -= chris.movement;
 			}
 			int x = brick.x;
 			for (int i = 0; i < brick.length; i++) {
@@ -63,7 +65,8 @@ public class Board extends JPanel implements KeyListener {
 				x += brick.image.getWidth(null);
 			}
 		}
-		
+		g.drawString(String.format("Distance: %d", distance), 20, 20);
+		g.drawString(String.format("Unread Emails: %d", unreadEmails), 20, 40);
 		g.drawImage(chris.image, chris.location.x, chris.location.y, null);
 		
 	}
