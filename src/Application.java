@@ -6,7 +6,7 @@ import javax.swing.JFrame;
 public class Application extends JFrame {
 
 	/**
-	 * 
+	 * Hi
 	 */
 	private static final long serialVersionUID = 1L;
 
@@ -39,7 +39,7 @@ public class Application extends JFrame {
 
 	public static void main(String[] args) {
 		
-		// We create an instance of our code example and make it visible on the screen.
+		// We create an instance and make it visible on the screen.
 
 				Application ex = new Application();
 				ex.setVisible(true);
