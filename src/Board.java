@@ -22,10 +22,16 @@ public class Board extends JPanel implements KeyListener {
 	
 	Image background;
 	Givens chris;
+	boolean animatingForward;
+	
+	final Brick[] bricks = {
+		new Brick(500, 200, 5)	
+	};
+	
 	public Board() {
 		
 		background = getImage("/images/lcc.png");
-		chris = new Givens();
+		chris = new Givens(this);
 		
 		Timer timer = new Timer();
 		timer.scheduleAtFixedRate(new TimerTask() {
@@ -46,6 +52,18 @@ public class Board extends JPanel implements KeyListener {
 		super.paint(g);
 		
 		chris.animate();
+		
+		for (Brick brick : bricks) {
+			if (this.animatingForward) {
+				brick.x -= 10;
+			}
+			int x = brick.x;
+			for (int i = 0; i < brick.length; i++) {
+				g.drawImage(brick.image, x, brick.y, null);
+				x += brick.image.getWidth(null);
+			}
+		}
+		
 		g.drawImage(chris.image, chris.location.x, chris.location.y, null);
 		
 	}
@@ -58,7 +76,7 @@ public class Board extends JPanel implements KeyListener {
 	//@Override
 	public void keyPressed(KeyEvent key) {
 		int keyCode = key.getKeyCode();
-		System.out.println(keyCode);
+		
 		if (keyCode == KeyEvent.VK_RIGHT) {
 			chris.movement = 10;
 		} else if (keyCode == KeyEvent.VK_LEFT) {
@@ -70,9 +88,10 @@ public class Board extends JPanel implements KeyListener {
 	
 	public void keyReleased(KeyEvent key) {
 		int keyCode = key.getKeyCode();
-		System.out.println(keyCode);
+		
 		if (keyCode == KeyEvent.VK_RIGHT || keyCode == KeyEvent.VK_LEFT) {
 			chris.movement = 0;
+			this.animatingForward = false;
 		}
 	}
 	

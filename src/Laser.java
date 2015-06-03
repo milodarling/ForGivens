@@ -5,7 +5,7 @@ public class Laser {
 	double slope;
 
 	public Laser(Givens chris, Katzfey eric) {
-		start = eric.center;
+		start = eric.location;
 		end = chris.location;
 		slope = (end.y - start.y)/(end.x - start.x);
 	}
