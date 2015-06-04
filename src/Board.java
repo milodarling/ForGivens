@@ -11,6 +11,7 @@ import javax.sound.sampled.Clip;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 
+import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -26,18 +27,21 @@ public class Board extends JPanel implements KeyListener {
 	int unreadEmails = 0;
 	Point flagLoc;
 	boolean levelComplete;
+	boolean fightingKatzfey = false;
+	Katzfey eric;
+	int repaintCount = 0;
 	
-	final Spike[][] spikes2D = 
+	Spike[][] spikes2D = 
 	{
 		{
 			new Spike(500, Spike.ON_FLOOR, 3),
 		},
 		{
-			new Spike(500, Spike.ON_FLOOR, 3)
+			//new Spike(500, Spike.ON_FLOOR, 3)
 		}
 	};
 	
-	final Brick[][] bricksbricks = 
+	Brick[][] bricksbricks = 
 	{
 		{
 			new Brick(500, 300, 5),
@@ -56,10 +60,11 @@ public class Board extends JPanel implements KeyListener {
 	
 	public Board() {
 		
-		background = getImage("/images/lcc.png");
+		background = getImage("/images/background.png");
 		flag = getImage("/images/flag.png");
 		chris = new Givens(this);
 		flagLoc = new Point(2165, Givens.MAX_Y + chris.image.getHeight(null) - flag.getHeight(null));
+		eric = new Katzfey(this);
 		
 		Timer timer = new Timer();
 		timer.scheduleAtFixedRate(new TimerTask() {
@@ -69,6 +74,34 @@ public class Board extends JPanel implements KeyListener {
 			  }
 			}, 0, 1000/10);
 		//addKeyListener(this);
+	}
+	
+	public void reloadSpikesAndBricks() {
+		Spike[][] spikes2D = 
+			{
+				{
+					new Spike(500, Spike.ON_FLOOR, 3),
+				},
+				{
+					new Spike(500, Spike.ON_FLOOR, 3)
+				}
+			};
+		this.spikes2D = spikes2D;
+			
+		Brick[][] bricksbricks = 
+			{
+				{
+					new Brick(500, 300, 5),
+					new Brick(600, 100, 3),
+					new Brick(800, 200, 4)
+				},
+				{
+					new Brick(500, 200, 5),
+					new Brick(600, 100, 3)
+				},
+			};
+		this.bricksbricks = bricksbricks;
+		
 	}
 	
 	public Image getImage(String path) {
@@ -109,7 +142,7 @@ public class Board extends JPanel implements KeyListener {
 		g.drawString(String.format("Distance: %d", distance), 20, 20);
 		g.drawString(String.format("Unread Emails: %d", unreadEmails), 20, 40);
 		g.drawImage(chris.image, chris.location.x, chris.location.y, null);
-		if (distance >= (level + 1) * 2000) {
+		if (distance >= (level + 1) * 200) {
 			if (!levelComplete) {
 				play("yay");
 			}
@@ -126,6 +159,14 @@ public class Board extends JPanel implements KeyListener {
 			chris.endMovement();
 			g.drawString("You died!", 500, 300);
 		}
+		if (fightingKatzfey) {
+			g.drawImage(eric.image, eric.location.x, eric.location.y, null);
+			if (!eric.isShootingLaser) {
+				eric.prepare();
+			}
+			eric.shootLaser(g);
+			
+		}
 	}
 	
 	public void paintComponent(Graphics g) {
@@ -134,7 +175,10 @@ public class Board extends JPanel implements KeyListener {
 	}
 	
 	public void fightKatzfey() {
-		System.exit(0);
+		background = getImage("/images/backgroundBoss.png");
+		bricks = new Brick[0];
+		spikes = new Spike[0];
+		fightingKatzfey = true;
 	}
 	
 	public void newLevel() {
@@ -143,9 +187,12 @@ public class Board extends JPanel implements KeyListener {
 		//increment the level
 		level++;
 		if (chris.isDead) {
+			DebugLog.log("Givens is ded rip");
 			distance = 0;
 			unreadEmails = 0;
 			level = 0;
+			chris.isDead = false;
+			reloadSpikesAndBricks();
 		}
 		if (level >= bricksbricks.length) {
 			//final boss
@@ -154,7 +201,9 @@ public class Board extends JPanel implements KeyListener {
 			//load the new set of bricks
 			flagLoc = new Point(2165, Givens.MAX_Y + chris.image.getHeight(null) - flag.getHeight(null));
 			bricks = bricksbricks[level];
+			spikes = spikes2D[level];
 		}
+		DebugLog.logf("Bricks: %s, spikes: %s", Arrays.toString(bricks), Arrays.toString(spikes));
 	}
 	
 	public void keyPressed(KeyEvent key) {

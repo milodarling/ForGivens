@@ -3,14 +3,11 @@ import javax.swing.ImageIcon;
 import java.awt.Point;
 import java.util.ArrayList;
 
-public class Givens implements Character {
-	Image image;
+public class Givens extends Character {
 	int imageNumber = 0;
 	int movement = 0;
-	Point location = new Point(100, MAX_Y);
 	boolean increasing = true;
 	boolean jumping;
-	Board board;
 	int jumpAmount = 70;
 	boolean imOnABrick = false;
 	Brick currentBrickOn;
@@ -24,6 +21,7 @@ public class Givens implements Character {
 	public final Image[] images = { getImage("/images/givensW1.png"), getImage("/images/givensW2.png"), getImage("/images/givensW3.png"), getImage("/images/givensW4.png") };
 	
 	public Givens(Board board) {
+		location = new Point(100, MAX_Y);
 		this.board = board;
 		image = images[0];
 	}
@@ -32,12 +30,8 @@ public class Givens implements Character {
 		image = images[index];
 	}
 	
-	public void refresh() {
-		
-	}
-	
-	public void move(int direction) {
-		DebugLog.logf("Direction: " + direction);
+	public Point center() {
+		return new Point((int)(this.location.x + (((double)this.image.getWidth(null)) / 2)), (int)(this.location.y + (((double)this.image.getHeight(null)) / 2)));
 	}
 	
 	public Image getImage(String path) {
