@@ -21,7 +21,7 @@ public class Application extends JFrame {
 	private void initUI() {
 		
 		Board board = new Board();
-		if (!DebugLog.debug) {
+		if (DebugLog.debug) {
 		try {
 			AudioInputStream inputStream = AudioSystem.getAudioInputStream(new File(this.getClass().getResource("/audio/music.wav").toURI()));
 			Clip clip = AudioSystem.getClip();

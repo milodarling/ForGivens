@@ -1,7 +1,11 @@
 import java.awt.Image;
+import java.awt.Point;
 
 
-public interface Character {
-	public void refresh();
-	public void move(int direction);
+public class Character {
+	Point location;
+	Board board;
+	Image image;
+	
+	
 }
