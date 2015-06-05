@@ -1,7 +1,7 @@
 //very useful debug logging class
 public class DebugLog {
 	//debug variable
-	public static boolean debug = true;
+	public static boolean debug = false;
 
 	//log with formatting
 	public static void logf(String pattern, Object... args) {
