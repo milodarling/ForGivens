@@ -11,7 +11,6 @@ public class Application extends JFrame {
 	 * Hi
 	 */
 	private static final long serialVersionUID = 1L;
-	SimpleAudioPlayer sap;
 
 	public Application() {
 
@@ -21,17 +20,19 @@ public class Application extends JFrame {
 	private void initUI() {
 		
 		Board board = new Board();
-		if (DebugLog.debug) {
-		try {
-			AudioInputStream inputStream = AudioSystem.getAudioInputStream(new File(this.getClass().getResource("/audio/music.wav").toURI()));
-			Clip clip = AudioSystem.getClip();
-			clip.open(inputStream);
-        	clip.loop(Clip.LOOP_CONTINUOUSLY);
-		} catch (Exception e) {
-			DebugLog.logf(":(");
+		
+		//don't play soundtrack while we're debugging; it's annoying
+		if (!DebugLog.debug || true) {
+			//play soundtrack
+			try {
+				AudioInputStream inputStream = AudioSystem.getAudioInputStream(new File(this.getClass().getResource("/audio/music.wav").toURI()));
+				Clip clip = AudioSystem.getClip();
+				clip.open(inputStream);
+				clip.loop(Clip.LOOP_CONTINUOUSLY);
+			} catch (Exception e) {
+				DebugLog.logf(":(");
+			}
 		}
-		}
-		//sap = new SimpleAudioPlayer(this.getClass().getResource("/audio/music.wav").toString().substring(5));
 		
 		// Here we put the Board to the center of the JFrame container.
 		add(board); 
