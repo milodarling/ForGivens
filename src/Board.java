@@ -14,6 +14,7 @@ import javax.swing.JPanel;
 import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.ArrayList;
 
 public class Board extends JPanel implements KeyListener {
 	//I have to do this. I don't know why
@@ -23,37 +24,31 @@ public class Board extends JPanel implements KeyListener {
 	Image flag;
 	Givens chris;
 	boolean animatingForward;
-	int distance = 0;
+	int distance = 2000;
 	int unreadEmails = 0;
 	Point flagLoc;
 	boolean levelComplete;
 	boolean fightingKatzfey = false;
 	Katzfey eric;
 	int repaintCount = 0;
+	boolean isPlaying = false;
+	boolean youWin = false;
+	boolean hasStartedGame = false;
+	Image gameOver = getImage("/images/gameover.png");
+	Image youWinImg = getImage("/images/youwin.png");
+	Image levelCompleteImg = getImage("/images/levelcomplete.png");
+	Image introScreen = getImage("/images/introscreen.png");
 	
-	Spike[][] spikes2D = 
-	{
-		{
-			new Spike(500, Spike.ON_FLOOR, 3),
-		},
-		{
-			//new Spike(500, Spike.ON_FLOOR, 3)
-		}
-	};
+	Mail[][] mailsArray = mailsArrayOrig();
 	
-	Brick[][] bricksbricks = 
-	{
-		{
-			new Brick(500, 300, 5),
-			new Brick(600, 100, 3),
-			new Brick(800, 200, 4)
-		},
-		{
-			new Brick(500, 200, 5),
-			new Brick(600, 100, 3)
-		},
-	};
-	int level = 0;
+	ArrayList<Mail> mails;
+	
+	int testingLevel = 1;
+	
+	Spike[][] spikes2D = spikes2DOrig();
+	Brick[][] bricksbricks = bricksbricksOrig();
+	
+	int level = 1;
 	Brick[] bricks = bricksbricks[level];
 	Spike[] spikes = spikes2D[level];
 	
@@ -65,6 +60,7 @@ public class Board extends JPanel implements KeyListener {
 		chris = new Givens(this);
 		flagLoc = new Point(2165, Givens.MAX_Y + chris.image.getHeight(null) - flag.getHeight(null));
 		eric = new Katzfey(this);
+		mails = new ArrayList<Mail>(Arrays.asList(mailsArray[level]));
 		
 		Timer timer = new Timer();
 		timer.scheduleAtFixedRate(new TimerTask() {
@@ -76,32 +72,156 @@ public class Board extends JPanel implements KeyListener {
 		//addKeyListener(this);
 	}
 	
-	public void reloadSpikesAndBricks() {
-		Spike[][] spikes2D = 
-			{
+	public static Mail[][] mailsArrayOrig() {
+		Mail[][] result = {
 				{
-					new Spike(500, Spike.ON_FLOOR, 3),
+					new Mail(502, 275),
+					new Mail(642, 75),
+					new Mail(1102, 175),
+					new Mail(1502, 165),
+					new Mail(1782, Spike.ON_FLOOR - 25),
 				},
 				{
-					new Spike(500, Spike.ON_FLOOR, 3)
+					new Mail(542, 175),
+					new Mail(902, 250),
+					new Mail(1352, 75),
+					new Mail(1630+92, 375),
+					new Mail(2100, 25),
+				},
+				{
+					//empty for katzfey battle
+				}
+		};
+		return result;
+	}
+	
+	public static Brick[][] bricksbricksOrig() {
+		Brick[][] result = {
+			{
+				//initial platforms
+				new Brick(500, 300, 5),
+				new Brick(600, 100, 3),
+				new Brick(800, 200, 4),
+				new Brick(1020, 350, 2),
+				new Brick(1100, 200, 4),
+				
+				//pyramid
+				new Brick(1300, 350, 1),
+				new Brick(1350, 300, 1),
+				new Brick(1400, 250, 1),
+				new Brick(1450, 200, 1),
+				new Brick(1500, 150, 1),
+				
+				//one by one on floor
+				new Brick(1690, Spike.ON_FLOOR, 1),
+				new Brick(1780, Spike.ON_FLOOR, 1),
+				new Brick(1870, Spike.ON_FLOOR, 1),
+			},
+			{
+				
+				//various platforms
+				new Brick(300, 350, 4),
+				new Brick(500, 200, 6),
+				new Brick(600, 100, 3),
+				
+				//one by one jumping
+				new Brick(740, 275, 1),
+				new Brick(820, 275, 1),
+				new Brick(900, 275, 1),
+				new Brick(980, 275, 1),
+				new Brick(1060, 275, 1),
+				
+				//obstacle jumping
+				new Brick(1120, 350, 1),
+				new Brick(1240, 180, 1),
+				new Brick(1350, 100, 1),
+				new Brick(1450, 400, 1),
+				new Brick(1550, 200, 1),
+				
+				//pyramid
+				new Brick(1590+90, 480, 10),
+				new Brick(1630+90, 440, 9),
+				new Brick(1670+90, 400, 8),
+				new Brick(1710+90, 360, 7),
+				new Brick(1750+90, 320, 6),
+				new Brick(1790+90, 280, 5),
+				new Brick(1830+90, 240, 4),
+				new Brick(1870+90, 200, 3),
+				new Brick(1910+90, 160, 2),
+				new Brick(1950+90, 120, 1)
+			},
+			{
+				//bricks for katzfey battle
+				new Brick(200, 420, 3, true),
+				new Brick(400, 200, 2, true),
+				new Brick(600, 220, 2, true),
+				new Brick(780, 140, 1, true),
+			}
+		};
+		return result;
+	}
+	
+	public static Spike[][] spikes2DOrig() {
+		Spike[][] result = 
+			{
+				{
+					//initial platforms
+					new Spike(500, Spike.ON_FLOOR, 10),
+					
+					//spikes on bricks
+					new Spike(1020, 310, 2),
+					
+					//below pyramid
+					new Spike(1300, Spike.ON_FLOOR, 7),
+					
+					//one by one on floor
+					new Spike(1650, Spike.ON_FLOOR, 1),
+					new Spike(1740, Spike.ON_FLOOR, 1),
+					new Spike(1830, Spike.ON_FLOOR, 1),
+					new Spike(1920, Spike.ON_FLOOR, 1),
+					
+				},
+				{
+					
+					//various spikes
+					new Spike(200, Spike.ON_FLOOR, 1),
+					new Spike(420, Spike.ON_FLOOR, 5),
+					new Spike(600, 160, 3),
+					
+					//one by one jumping
+					new Spike(780, Spike.ON_FLOOR, 1),
+					new Spike(860, Spike.ON_FLOOR, 1),
+					new Spike(940, Spike.ON_FLOOR, 1),
+					new Spike(1020, Spike.ON_FLOOR, 1),
+					
+					//obstacle course
+					new Spike(1100, Spike.ON_FLOOR, 14),
+					
+					//pyramid
+					new Spike(1550+90, 480, 11),
+					new Spike(1630+90, 440, 9),
+					new Spike(1630+90, 400, 9),
+					new Spike(1710+90, 360, 7),
+					new Spike(1710+90, 320, 7),
+					new Spike(1790+90, 280, 5),
+					new Spike(1790+90, 240, 5),
+					new Spike(1870+90, 200, 3),
+					new Spike(1870+90, 160, 3),
+					new Spike(1950+90, 120, 1)
+				},
+				{
+					//empty for katzfey fight
 				}
 			};
-		this.spikes2D = spikes2D;
+		return result;
+	}
+	
+	public void reloadSpikesAndBricks() {
+		this.spikes2D = spikes2DOrig();
 			
-		Brick[][] bricksbricks = 
-			{
-				{
-					new Brick(500, 300, 5),
-					new Brick(600, 100, 3),
-					new Brick(800, 200, 4)
-				},
-				{
-					new Brick(500, 200, 5),
-					new Brick(600, 100, 3)
-				},
-			};
-		this.bricksbricks = bricksbricks;
+		this.bricksbricks = bricksbricksOrig();
 		
+		this.mailsArray = mailsArrayOrig();
 	}
 	
 	public Image getImage(String path) {
@@ -112,12 +232,17 @@ public class Board extends JPanel implements KeyListener {
 	public void paint(Graphics g) {
 		super.paint(g);
 		
+		if (!hasStartedGame) {
+			g.drawImage(introScreen, 0, 0, null);
+			return;
+		}
+		
 		chris.animate();
 		if (!chris.atMinX)
 			distance += chris.movement;
 		
 		for (Brick brick : bricks) {
-			if (this.animatingForward) {
+			if (this.animatingForward && !fightingKatzfey) {
 				brick.x -= chris.movement;
 			}
 			int x = brick.x;
@@ -126,8 +251,16 @@ public class Board extends JPanel implements KeyListener {
 				x += brick.image.getWidth(null);
 			}
 		}
+		
+		for (Mail mail : mails) {
+			if (this.animatingForward && !fightingKatzfey) {
+				mail.x -= chris.movement;
+			}
+			g.drawImage(mail.image, mail.x, mail.y, null);
+		}
+		
 		for (Spike spike : spikes) {
-			if (this.animatingForward) {
+			if (this.animatingForward && !fightingKatzfey) {
 				spike.x -= chris.movement;
 			}
 			int x = spike.x;
@@ -136,35 +269,77 @@ public class Board extends JPanel implements KeyListener {
 				x += spike.image.getWidth(null);
 			}
 		}
-		if (this.animatingForward)
+		if (this.animatingForward && !fightingKatzfey)
 			flagLoc.x -= chris.movement;
 		g.drawImage(flag, flagLoc.x, flagLoc.y, null);
 		g.drawString(String.format("Distance: %d", distance), 20, 20);
 		g.drawString(String.format("Unread Emails: %d", unreadEmails), 20, 40);
 		g.drawImage(chris.image, chris.location.x, chris.location.y, null);
-		if (distance >= (level + 1) * 200) {
+		if ((distance >= (level + 1) * 2000) && !fightingKatzfey) {
 			if (!levelComplete) {
 				play("yay");
 			}
 			levelComplete = true;
 			chris.endMovement();
-			g.drawString("Level complete!", 500, 300);
+			g.drawImage(levelCompleteImg, 205, 217, null);
 		}
 		if (chris.isTouchingASpike()) {
 			if (!levelComplete) {
-				play("yay");
+				play("gameover");
 			}
 			levelComplete = true;
 			chris.isDead = true;
 			chris.endMovement();
-			g.drawString("You died!", 500, 300);
+			g.drawImage(gameOver, 205, 217, null);
 		}
 		if (fightingKatzfey) {
-			g.drawImage(eric.image, eric.location.x, eric.location.y, null);
-			if (!eric.isShootingLaser) {
+			if (!eric.isKill)
+				g.drawImage(eric.image, eric.location.x, eric.location.y, null);
+			
+			if (!chris.isDead && !eric.isKill) {
+			//create another laser every 2 seconds
+			if (repaintCount == 19) {
 				eric.prepare();
 			}
+			
+			//shoot the lasers
 			eric.shootLaser(g);
+			}
+			
+			//switch the body state every 1/5th second
+			if (repaintCount%2 == 1) {
+				eric.switchBodyState();
+			}
+			
+			if (eric.isKill || chris.checkForKillz()) {
+				if (!levelComplete) {
+					play("yay");
+				}
+				levelComplete = true;
+				youWin = true;
+				chris.endMovement();
+				g.drawImage(youWinImg, 205, 217, null);
+			} else
+			
+			//check for collisions with a laser
+			if (chris.gotShotByALaser() || chris.isDead) {
+				if (!levelComplete) {
+					play("gameover");
+				}
+				if (!chris.isDead) {
+					eric.clear();
+				}
+				levelComplete = true;
+				chris.isDead = true;
+				chris.endMovement();
+				DebugLog.log("Ded");
+				g.drawImage(gameOver, 205, 217, null);
+			}
+			
+			//increment the seconds counter
+			repaintCount++;
+			//reset it at 20
+			if (repaintCount >= 20) repaintCount = 0;
 			
 		}
 	}
@@ -176,32 +351,38 @@ public class Board extends JPanel implements KeyListener {
 	
 	public void fightKatzfey() {
 		background = getImage("/images/backgroundBoss.png");
-		bricks = new Brick[0];
-		spikes = new Spike[0];
+		//bricks = new Brick[0];
+		//spikes = new Spike[0];
 		fightingKatzfey = true;
 	}
 	
 	public void newLevel() {
 		levelComplete = false;
+		fightingKatzfey = false;
+		eric.isKill = false;
+		background = getImage("/images/background.png");
 		chris.location = new Point(100, Givens.MAX_Y);
 		//increment the level
 		level++;
 		if (chris.isDead) {
 			DebugLog.log("Givens is ded rip");
-			distance = 0;
+			distance = testingLevel * 2000;
 			unreadEmails = 0;
-			level = 0;
+			level = testingLevel;
 			chris.isDead = false;
 			reloadSpikesAndBricks();
 		}
-		if (level >= bricksbricks.length) {
+		bricks = bricksbricks[level];
+		spikes = spikes2D[level];
+		mails = new ArrayList<Mail>(Arrays.asList(mailsArray[level]));
+		if (level >= bricksbricks.length - 1) {
 			//final boss
 			fightKatzfey();
 		} else {
 			//load the new set of bricks
 			flagLoc = new Point(2165, Givens.MAX_Y + chris.image.getHeight(null) - flag.getHeight(null));
-			bricks = bricksbricks[level];
-			spikes = spikes2D[level];
+			//bricks = bricksbricks[level];
+			//spikes = spikes2D[level];
 		}
 		DebugLog.logf("Bricks: %s, spikes: %s", Arrays.toString(bricks), Arrays.toString(spikes));
 	}
@@ -209,22 +390,30 @@ public class Board extends JPanel implements KeyListener {
 	public void keyPressed(KeyEvent key) {
 		int keyCode = key.getKeyCode();
 		if (!this.levelComplete) {
-		if (keyCode == KeyEvent.VK_RIGHT) {
-			chris.movement = 10;
-		} else if (keyCode == KeyEvent.VK_LEFT) {
-			chris.movement = -10;
-		} else if (keyCode == KeyEvent.VK_UP) {
-			if (!chris.jumping) {
-				//play the jump sound
-				play("jump");
+			if (keyCode == KeyEvent.VK_RIGHT) {
+				chris.movement = 10;
+			} else if (keyCode == KeyEvent.VK_LEFT) {
+				chris.movement = -10;
+			} else if (keyCode == KeyEvent.VK_UP) {
+				if (!chris.jumping) {
+					//play the jump sound
+					play("jump");
+				}
+				chris.jumping = true;
+			} else if (keyCode == KeyEvent.VK_SPACE && !hasStartedGame) {
+				DebugLog.log("starting game");
+				hasStartedGame = true;
 			}
-			chris.jumping = true;
-		}
 		} else {
 			if (keyCode == KeyEvent.VK_SPACE) {
+				if (youWin) System.exit(0);
+				
 				DebugLog.logf("New Level");
 				newLevel();
 			}
+		}
+		if (keyCode == KeyEvent.VK_ESCAPE) {
+			System.exit(0);
 		}
 	}
 	
@@ -241,6 +430,7 @@ public class Board extends JPanel implements KeyListener {
 	}
 	
 	public void play(String name) {
+		if (chris.isDead) return;
 		try {
 			AudioInputStream inputStream = AudioSystem.getAudioInputStream(new File(this.getClass().getResource("/audio/" + name + ".wav").toURI()));
 			Clip clip = AudioSystem.getClip();

@@ -21,15 +21,15 @@ public class Application extends JFrame {
 	private void initUI() {
 		
 		Board board = new Board();
-		if (DebugLog.debug) {
-		try {
-			AudioInputStream inputStream = AudioSystem.getAudioInputStream(new File(this.getClass().getResource("/audio/music.wav").toURI()));
-			Clip clip = AudioSystem.getClip();
-			clip.open(inputStream);
-        	clip.loop(Clip.LOOP_CONTINUOUSLY);
-		} catch (Exception e) {
-			DebugLog.logf(":(");
-		}
+		if (!DebugLog.debug || true) {
+			try {
+				AudioInputStream inputStream = AudioSystem.getAudioInputStream(new File(this.getClass().getResource("/audio/music.wav").toURI()));
+				Clip clip = AudioSystem.getClip();
+				clip.open(inputStream);
+				clip.loop(Clip.LOOP_CONTINUOUSLY);
+			} catch (Exception e) {
+				DebugLog.logf(":(");
+			}
 		}
 		//sap = new SimpleAudioPlayer(this.getClass().getResource("/audio/music.wav").toString().substring(5));
 		

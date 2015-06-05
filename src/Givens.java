@@ -30,13 +30,56 @@ public class Givens extends Character {
 		image = images[index];
 	}
 	
+	public boolean gotShotByALaser() {
+		for (Laser laser : board.eric.lasers) {
+			if (
+					//right side of body
+					laser.location.x < this.location.x + this.image.getWidth(null) - 2 && 
+					//left side of body
+					this.location.x + 19 < laser.location.x + laser.image.getWidth(null) && 
+					//feet
+					this.location.y + this.image.getHeight(null) > laser.location.y &&
+					//head
+					this.location.y < laser.location.y + laser.image.getHeight(null)
+					) {
+					return true;
+				}
+		}
+		return false;
+	}
+	
 	public Point center() {
+		DebugLog.logf("X: this.location.x: %d, this.image.getWidth(null)/2: %f, sum: %d", this.location.x, (((double)this.image.getWidth(null)) / 2),  (int)(this.location.x + (((double)this.image.getWidth(null)) / 2)));
+		DebugLog.logf("Y: this.location.y: %d, this.image.getHeight(null)/2: %f, sum: %d", this.location.y, (((double)this.image.getHeight(null)) / 2), (int)(this.location.y + (((double)this.image.getHeight(null)) / 2)));
 		return new Point((int)(this.location.x + (((double)this.image.getWidth(null)) / 2)), (int)(this.location.y + (((double)this.image.getHeight(null)) / 2)));
 	}
 	
 	public Image getImage(String path) {
 		ImageIcon icon = new ImageIcon(this.getClass().getResource(path));
 		return icon.getImage();
+	}
+	
+	public void youveGotMail() {
+		Mail result = null;
+		for (Mail mail : board.mails) {
+			if (
+					//right side of body
+					mail.x < this.location.x + this.image.getWidth(null) - 2 && 
+					//left side of body
+					this.location.x + 19 < mail.x + mail.image.getWidth(null) && 
+					//feet
+					this.location.y + this.image.getHeight(null) > mail.y &&
+					//head
+					this.location.y < mail.y + mail.image.getHeight(null)
+				) {
+				result = mail;
+			}
+		}
+		if (result != null) {
+			board.mails.remove(result);
+			board.unreadEmails++;
+			board.play("mail");
+		}
 	}
 	
 	public boolean isTouchingASpike() {
@@ -92,10 +135,29 @@ public class Givens extends Character {
 		this.movement = 0;
 		board.animatingForward = false;
 		this.imageNumber = 0;
+		//this.jumping = false;
 		this.refresh(0);
 	}
 	
+	public boolean checkForKillz() {
+		if (
+				jumping &&
+				board.eric.location.x + 100 < this.location.x + this.image.getWidth(null) - 2 &&
+				this.location.x + 19 < board.eric.location.x + board.eric.image.getWidth(null) - 81 && 
+				this.location.y + this.image.getHeight(null) < board.eric.location.y &&
+				this.location.y + this.image.getHeight(null) + jumpAmount > board.eric.location.y
+			) {
+			board.eric.lasers.clear();
+			board.eric.isKill = true;
+			return true;
+		}
+		return false;
+	}
+	
+	//public 
+	
 	public void animate() {
+		youveGotMail();
 		this.atMinX = false;
 		if (this.movement != 0) {
 			this.imageNumber += 1;
