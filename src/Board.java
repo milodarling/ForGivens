@@ -19,42 +19,58 @@ import java.util.ArrayList;
 public class Board extends JPanel implements KeyListener {
 	//I have to do this. I don't know why
 	private static final long serialVersionUID = 1L;
-	
+	//background image
 	Image background;
+	//level complete flag
 	Image flag;
+	//our main character
 	Givens chris;
+	//if the screen needs to move forward rather than the character himself
 	boolean animatingForward;
-	int distance = 2000;
+	//user distance and emails
+	int distance = 0;
 	int unreadEmails = 0;
+	//the location of the flag
 	Point flagLoc;
+	//used for suspending animations and stuff when you've completed a level
 	boolean levelComplete;
+	//are we at the boss level yet?
 	boolean fightingKatzfey = false;
+	//our Katzfey object
 	Katzfey eric;
+	//used to count time in `paint()`
 	int repaintCount = 0;
+	//we aren't playing when we first launch, we're at the start menu
 	boolean isPlaying = false;
+	//did you win the game?
 	boolean youWin = false;
+	//have you started the game?
 	boolean hasStartedGame = false;
+	//image assets
 	Image gameOver = getImage("/images/gameover.png");
 	Image youWinImg = getImage("/images/youwin.png");
 	Image levelCompleteImg = getImage("/images/levelcomplete.png");
 	Image introScreen = getImage("/images/introscreen.png");
 	
+	//2D array for envelopes for each level
 	Mail[][] mailsArray = mailsArrayOrig();
-	
+	//ArrayList for the current level's envelopes
 	ArrayList<Mail> mails;
-	
-	int testingLevel = 1;
-	
+	//skip to a given level for testing
+	int testingLevel = 0;
+	//2D arrays for spikes are bricks for each level
 	Spike[][] spikes2D = spikes2DOrig();
 	Brick[][] bricksbricks = bricksbricksOrig();
-	
-	int level = 1;
+	//our current level
+	int level = 0;
+	//1D Array for bricks and spikes for the current level
 	Brick[] bricks = bricksbricks[level];
 	Spike[] spikes = spikes2D[level];
 	
 	
 	public Board() {
 		
+		//set up some of the ivars
 		background = getImage("/images/background.png");
 		flag = getImage("/images/flag.png");
 		chris = new Givens(this);
@@ -62,6 +78,7 @@ public class Board extends JPanel implements KeyListener {
 		eric = new Katzfey(this);
 		mails = new ArrayList<Mail>(Arrays.asList(mailsArray[level]));
 		
+		//repaint every tenth of a second
 		Timer timer = new Timer();
 		timer.scheduleAtFixedRate(new TimerTask() {
 			  @Override
@@ -71,7 +88,7 @@ public class Board extends JPanel implements KeyListener {
 			}, 0, 1000/10);
 		//addKeyListener(this);
 	}
-	
+	//returns the original arrays of mail, bricks, spikes so that they aren't all weird when we change their locations and stuff and then reload them after game over
 	public static Mail[][] mailsArrayOrig() {
 		Mail[][] result = {
 				{
@@ -224,41 +241,46 @@ public class Board extends JPanel implements KeyListener {
 		this.mailsArray = mailsArrayOrig();
 	}
 	
+	//load image from the resources
 	public Image getImage(String path) {
 		ImageIcon icon = new ImageIcon(this.getClass().getResource(path));
 		return icon.getImage();
 	}
 	
+	//REPAINT
 	public void paint(Graphics g) {
 		super.paint(g);
-		
+		//if we aren't playing yet, just show the start screen
 		if (!hasStartedGame) {
 			g.drawImage(introScreen, 0, 0, null);
 			return;
 		}
-		
+		//take care of givens' animations in his class
 		chris.animate();
+		//add his forward motion to the user's distance
 		if (!chris.atMinX)
 			distance += chris.movement;
 		
+		//shift the bricks over if needed to create motion, and draw them
 		for (Brick brick : bricks) {
 			if (this.animatingForward && !fightingKatzfey) {
 				brick.x -= chris.movement;
 			}
+			//for Brick objects with more than 1 square brick
 			int x = brick.x;
 			for (int i = 0; i < brick.length; i++) {
 				g.drawImage(brick.image, x, brick.y, null);
 				x += brick.image.getWidth(null);
 			}
 		}
-		
+		//same idea for mail
 		for (Mail mail : mails) {
 			if (this.animatingForward && !fightingKatzfey) {
 				mail.x -= chris.movement;
 			}
 			g.drawImage(mail.image, mail.x, mail.y, null);
 		}
-		
+		//same idea for spikes
 		for (Spike spike : spikes) {
 			if (this.animatingForward && !fightingKatzfey) {
 				spike.x -= chris.movement;
@@ -269,41 +291,60 @@ public class Board extends JPanel implements KeyListener {
 				x += spike.image.getWidth(null);
 			}
 		}
+		
+		//move the flag towards givens
 		if (this.animatingForward && !fightingKatzfey)
 			flagLoc.x -= chris.movement;
+		//draw the flag
 		g.drawImage(flag, flagLoc.x, flagLoc.y, null);
+		//show the user distance and emails
 		g.drawString(String.format("Distance: %d", distance), 20, 20);
 		g.drawString(String.format("Unread Emails: %d", unreadEmails), 20, 40);
+		//draw givens
 		g.drawImage(chris.image, chris.location.x, chris.location.y, null);
+		//if they completed the level, move on
 		if ((distance >= (level + 1) * 2000) && !fightingKatzfey) {
 			if (!levelComplete) {
+				//play the yay
 				play("yay");
 			}
+			//set levelComplete to true to suspend key listening and movement
 			levelComplete = true;
+			//stop moving, chris
 			chris.endMovement();
+			//draw the level complete text
 			g.drawImage(levelCompleteImg, 205, 217, null);
 		}
+		//he touched a spike and last
 		if (chris.isTouchingASpike()) {
 			if (!levelComplete) {
+				//play game over sound
 				play("gameover");
 			}
+			//set levelComplete to true to suspend movements and stuff
 			levelComplete = true;
+			//rip chris
 			chris.isDead = true;
+			//stop moving, you're dead
 			chris.endMovement();
+			//draw the game over text
 			g.drawImage(gameOver, 205, 217, null);
 		}
+		
+		//if we're at the boss level
 		if (fightingKatzfey) {
+			//as long as katzfey isn't dead, draw him
 			if (!eric.isKill)
 				g.drawImage(eric.image, eric.location.x, eric.location.y, null);
-			
+			//if they're both alive
 			if (!chris.isDead && !eric.isKill) {
-			//create another laser every 2 seconds
-			if (repaintCount == 19) {
-				eric.prepare();
-			}
-			
-			//shoot the lasers
-			eric.shootLaser(g);
+				//create another laser every 2 seconds
+				if (repaintCount == 19) {
+					eric.prepare();
+				}
+
+				//shoot the lasers
+				eric.shootLaser(g);
 			}
 			
 			//switch the body state every 1/5th second
@@ -311,28 +352,36 @@ public class Board extends JPanel implements KeyListener {
 				eric.switchBodyState();
 			}
 			
+			//if katzfey's dead
 			if (eric.isKill || chris.checkForKillz()) {
+				//you win
 				if (!levelComplete) {
 					play("yay");
 				}
+				//stop motion and stuff
 				levelComplete = true;
 				youWin = true;
 				chris.endMovement();
+				//show win image
 				g.drawImage(youWinImg, 205, 217, null);
 			} else
 			
 			//check for collisions with a laser
 			if (chris.gotShotByALaser() || chris.isDead) {
+				//you died :(
 				if (!levelComplete) {
 					play("gameover");
 				}
+				//if we haven't done so already, clear the lasers
 				if (!chris.isDead) {
 					eric.clear();
 				}
+				//set the ivars and stuff
 				levelComplete = true;
 				chris.isDead = true;
 				chris.endMovement();
 				DebugLog.log("Ded");
+				//game over dude
 				g.drawImage(gameOver, 205, 217, null);
 			}
 			
@@ -344,26 +393,30 @@ public class Board extends JPanel implements KeyListener {
 		}
 	}
 	
+	//draw the background
 	public void paintComponent(Graphics g) {
 		g.drawImage(background, 0, 0, null);
 		
 	}
 	
+	//change the background to dark, set the ivar
 	public void fightKatzfey() {
 		background = getImage("/images/backgroundBoss.png");
-		//bricks = new Brick[0];
-		//spikes = new Spike[0];
 		fightingKatzfey = true;
 	}
 	
+	//when you've pressed space for a new level
 	public void newLevel() {
+		//reset the ivars
 		levelComplete = false;
 		fightingKatzfey = false;
 		eric.isKill = false;
+		//refresh the background
 		background = getImage("/images/background.png");
 		chris.location = new Point(100, Givens.MAX_Y);
 		//increment the level
 		level++;
+		//if we're starting over, reset levels and distance, etc.
 		if (chris.isDead) {
 			DebugLog.log("Givens is ded rip");
 			distance = testingLevel * 2000;
@@ -372,6 +425,7 @@ public class Board extends JPanel implements KeyListener {
 			chris.isDead = false;
 			reloadSpikesAndBricks();
 		}
+		//load the new bricks and spikes and mail
 		bricks = bricksbricks[level];
 		spikes = spikes2D[level];
 		mails = new ArrayList<Mail>(Arrays.asList(mailsArray[level]));
@@ -379,44 +433,53 @@ public class Board extends JPanel implements KeyListener {
 			//final boss
 			fightKatzfey();
 		} else {
-			//load the new set of bricks
+			//reset the flag too
 			flagLoc = new Point(2165, Givens.MAX_Y + chris.image.getHeight(null) - flag.getHeight(null));
-			//bricks = bricksbricks[level];
-			//spikes = spikes2D[level];
 		}
-		DebugLog.logf("Bricks: %s, spikes: %s", Arrays.toString(bricks), Arrays.toString(spikes));
 	}
 	
+	//listen for key presses
 	public void keyPressed(KeyEvent key) {
+		//key code
 		int keyCode = key.getKeyCode();
+		//if we're allowed to move givens
 		if (!this.levelComplete) {
+			//right
 			if (keyCode == KeyEvent.VK_RIGHT) {
 				chris.movement = 10;
+			//left
 			} else if (keyCode == KeyEvent.VK_LEFT) {
 				chris.movement = -10;
+			//jump
 			} else if (keyCode == KeyEvent.VK_UP) {
 				if (!chris.jumping) {
 					//play the jump sound
 					play("jump");
 				}
 				chris.jumping = true;
+			//space to start the game
 			} else if (keyCode == KeyEvent.VK_SPACE && !hasStartedGame) {
 				DebugLog.log("starting game");
 				hasStartedGame = true;
 			}
 		} else {
+			//if we should be starting over/new level
 			if (keyCode == KeyEvent.VK_SPACE) {
+				//if you won, exit the game
 				if (youWin) System.exit(0);
 				
+				//otherwise create a new level
 				DebugLog.logf("New Level");
 				newLevel();
 			}
 		}
+		//escape to quit
 		if (keyCode == KeyEvent.VK_ESCAPE) {
 			System.exit(0);
 		}
 	}
 	
+	//stop moving
 	public void keyReleased(KeyEvent key) {
 		int keyCode = key.getKeyCode();
 		
@@ -425,10 +488,12 @@ public class Board extends JPanel implements KeyListener {
 		}
 	}
 	
+	//we don't need this
 	public void keyTyped(KeyEvent key) {
 		
 	}
 	
+	//play a sound clip once
 	public void play(String name) {
 		if (chris.isDead) return;
 		try {

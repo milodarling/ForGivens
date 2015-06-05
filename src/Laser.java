@@ -8,17 +8,25 @@ import java.awt.image.BufferedImage;
 
 import javax.swing.ImageIcon;
 public class Laser {
+	//image
 	Image image;
+	//angle it points at
 	double angle;
+	//used to rotate the image
 	AffineTransformOp op;
+	//location of the laser
 	Point location;
 	
 	public Laser(double angle, Point start) {
+		//assign angle and initial location
 		this.angle = angle;
 		this.location = start;
+		//load image
 		this.image = getImage("/images/laserStart.png");
+		//get midpoint
 		double locationX = this.image.getWidth(null) / 2;
 		double locationY = this.image.getHeight(null) / 2;
+		//rotation stuff
 		AffineTransform tx = AffineTransform.getRotateInstance(angle, locationX, locationY);
 		this.op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
 
@@ -34,6 +42,7 @@ public class Laser {
 		((Graphics2D)g).drawImage(op.filter(toBufferedImage(this.image), null), location.x, location.y, null);
 	}
 	
+	//convert Image to BufferedImage for rotation
 	public static BufferedImage toBufferedImage(Image img)
 	{
 	    if (img instanceof BufferedImage)
